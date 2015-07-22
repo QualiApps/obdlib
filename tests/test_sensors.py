@@ -73,6 +73,7 @@ class TestCommand(unittest.TestCase):
         self.s.init = mock.MagicMock()
         self.s._Command__call = mock.MagicMock()
         resp = self.s.check_pids()
+
         self.assertIsNone(resp)
 
     def test_is_pids(self):
