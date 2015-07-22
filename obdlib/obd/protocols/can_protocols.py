@@ -37,37 +37,37 @@ class ProtocolsCan(Base):
         if raw_data:
             ecu_messages = self.remove_searching(raw_data)
 
-            if self.check_result(
-                    ecu_messages) and self.check_error(ecu_messages):
+            if self.check_message(ecu_messages):
                 # if the header enabled
                 if self.header:
                     # multi line (ELM spec page 42) or single frame response
-                    if len(ecu_messages):
-                        self.data_start_byte = 4
-                        # sorts ECU's messages
-                        ecu_messages = sorted(ecu_messages)
+                    self.data_start_byte = 4
+                    # sorts ECU's messages
+                    ecu_messages = sorted(ecu_messages)
 
-                        if self.header_bits == self.header_11:
-                            # align CAN header (11 bits to 29 bits)
-                            # PCI byte are 8 and 9 indexes
-                            ecu_messages = self.__align_frame(ecu_messages)
+                    if self.check_header():
+                        # align CAN header (11 bits to 29 bits)
+                        # PCI byte are 8 and 9 indexes
+                        ecu_messages = self.__align_frame(ecu_messages)
 
-                        for message in ecu_messages:
-                            ecu_number, f_type, response_mode = self.__get_frame_params(message)
+                    for message in ecu_messages:
+                        ecu_number, f_type, response_mode = self.__get_frame_params(message)
 
-                            # check if response trouble codes
-                            if response_mode == 43:
-                                # add fake byte after the mode one
-                                # nothing to do
-                                self.data_start_byte = 2
+                        # check if response trouble codes
+                        if response_mode == 43:
+                            # add fake byte after the mode one
+                            # nothing to do
+                            self.data_start_byte = 2
 
-                            self.__process(data, message, ecu_number, f_type)
-                    else:
-                        mess = "Error response data"
-                        logger.error(mess)
-                        raise Exception(mess)
+                        self.__process(data, message, ecu_number, f_type)
 
         return data
+
+    def check_header(self):
+        """
+            Checks header. If header bits are 11, returns True
+        """
+        return self.header_bits == self.header_11
 
     def __process(self, data, message, ecu_number, f_type):
         # Single Frame
