@@ -61,7 +61,7 @@ class ProtocolsCan(Base):
                                 # nothing to do
                                 self.data_start_byte = 2
 
-                            data[ecu_number] = self.__proccess(message, f_type)
+                            data[ecu_number] = self.__process(message, f_type)
                     else:
                         mess = "Error response data"
                         logger.error(mess)
@@ -69,7 +69,7 @@ class ProtocolsCan(Base):
 
         return data
 
-    def __get_frame_params(self, message, f_type):
+    def __process(self, message, f_type):
         data = None
         # Single Frame
         if f_type == self.mess_SF:
