@@ -61,7 +61,7 @@ class ProtocolsCan(Base):
                                 # nothing to do
                                 self.data_start_byte = 2
 
-                            data[ecu_number] = self.__process(message, f_type)
+                            self.__process(data, message, ecu_number, f_type)
                     else:
                         mess = "Error response data"
                         logger.error(mess)
@@ -69,8 +69,7 @@ class ProtocolsCan(Base):
 
         return data
 
-    def __process(self, message, f_type):
-        data = None
+    def __process(self, data, message, ecu_number, f_type):
         # Single Frame
         if f_type == self.mess_SF:
             # 11 bits header:
@@ -78,7 +77,7 @@ class ProtocolsCan(Base):
             #
             # 29 bits header:
             # 18 DA F1 10 06 41 00 FF FF FF FF FC
-            data = self.__get_single_data(message)
+            data[ecu_number] = self.__get_single_data(message)
 
         # multi line frame
         # the First Frame (of a multi frame message)
@@ -95,13 +94,11 @@ class ProtocolsCan(Base):
         # 18 DA F1 10 21 32 38 39 34 39 41 43
         # 18 DA F1 10 22 00 00 00 00 00 00 31
         elif f_type == self.mess_FF:
-            data = message[self.frame_start:]
+            data[ecu_number] = message[self.frame_start:]
 
         # the Consecutive Frame
         elif f_type == self.mess_CF:
-            data += message[self.frame_start:]
-
-        return data
+            data[ecu_number] += message[self.frame_start:]
 
     def __get_single_data(self, message):
         """
