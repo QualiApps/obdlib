@@ -61,39 +61,45 @@ class ProtocolsCan(Base):
                                 # nothing to do
                                 self.data_start_byte = 2
 
-                            # Single Frame
-                            if f_type == self.mess_SF:
-                                # 11 bits header:
-                                # 7E8 06 41 00 FF FF FF FF FC
-                                #
-                                # 29 bits header:
-                                # 18 DA F1 10 06 41 00 FF FF FF FF FC
-                                data[ecu_number] = self.__get_single_data(message)
-
-                            # multi line frame
-                            # the First Frame (of a multi frame message)
-                            #
-                            # 11 bits header:
-                            # [ecu][type][order][        data       ]
-                            # 7E8    1      0   13 49 04 01 35 36 30
-                            # 7E8 21 32 38 39 34 39 41 43
-                            # 7E8 22 00 00 00 00 00 00 31
-                            #
-                            # 29 bits header:
-                            # ........[ecu][type][order][       data       ]
-                            # 18 DA F1 10    1      0   32 38 39 34 39 41 43
-                            # 18 DA F1 10 21 32 38 39 34 39 41 43
-                            # 18 DA F1 10 22 00 00 00 00 00 00 31
-                            elif f_type == self.mess_FF:
-                                data[ecu_number] = message[self.frame_start:]
-
-                            # the Consecutive Frame
-                            elif f_type == self.mess_CF:
-                                data[ecu_number] += message[self.frame_start:]
+                            data[ecu_number] = self.__proccess(message, f_type)
                     else:
                         mess = "Error response data"
                         logger.error(mess)
                         raise Exception(mess)
+
+        return data
+
+    def __get_frame_params(self, message, f_type):
+        data = None
+        # Single Frame
+        if f_type == self.mess_SF:
+            # 11 bits header:
+            # 7E8 06 41 00 FF FF FF FF FC
+            #
+            # 29 bits header:
+            # 18 DA F1 10 06 41 00 FF FF FF FF FC
+            data = self.__get_single_data(message)
+
+        # multi line frame
+        # the First Frame (of a multi frame message)
+        #
+        # 11 bits header:
+        # [ecu][type][order][        data       ]
+        # 7E8    1      0   13 49 04 01 35 36 30
+        # 7E8 21 32 38 39 34 39 41 43
+        # 7E8 22 00 00 00 00 00 00 31
+        #
+        # 29 bits header:
+        # ........[ecu][type][order][       data       ]
+        # 18 DA F1 10    1      0   32 38 39 34 39 41 43
+        # 18 DA F1 10 21 32 38 39 34 39 41 43
+        # 18 DA F1 10 22 00 00 00 00 00 00 31
+        elif f_type == self.mess_FF:
+            data = message[self.frame_start:]
+
+        # the Consecutive Frame
+        elif f_type == self.mess_CF:
+            data += message[self.frame_start:]
 
         return data
 
