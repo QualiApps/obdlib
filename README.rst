@@ -76,5 +76,5 @@ See LICENSE_ for details.
 .. |version| image:: https://badge.fury.io/py/obdlib.svg
     :target: https://pypi.python.org/pypi/obdlib/
 
-.. |scrutinizer| image:: https://scrutinizer-ci.com/g/s-s-boika/obdlib/badges/quality-score.png?b=master
-    :target: https://scrutinizer-ci.com/g/s-s-boika/obdlib
+.. |scrutinizer| image:: https://scrutinizer-ci.com/g/QualiApps/obdlib/badges/quality-score.png?b=master
+    :target: https://scrutinizer-ci.com/g/QualiApps/obdlib/
