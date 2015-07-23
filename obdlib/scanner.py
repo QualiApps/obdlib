@@ -163,7 +163,7 @@ class OBDScanner(object):
                     continue
 
                 if len(data) == 0:
-                    if retry_number >= elm327.DEFAULT_RETRIES:
+                    if self.retry(retry_number):
                         break
                     retry_number += 1
                     continue
@@ -178,6 +178,10 @@ class OBDScanner(object):
             raise Exception(mess)
 
         return Response()
+
+    @staticmethod
+    def retry(number):
+        return number >= elm327.DEFAULT_RETRIES
 
     def reset(self):
         """
