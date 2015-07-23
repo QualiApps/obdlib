@@ -1,4 +1,4 @@
-|build| |version| |scrutinizer|
+|build| |version| |scrutinizer| |coverage|
 
 Python OBD Library
 == == == == == == == == ==
@@ -77,4 +77,7 @@ See LICENSE_ for details.
     :target: https://pypi.python.org/pypi/obdlib/
 
 .. |scrutinizer| image:: https://scrutinizer-ci.com/g/QualiApps/obdlib/badges/quality-score.png?b=master
+    :target: https://scrutinizer-ci.com/g/QualiApps/obdlib/
+
+.. |coverage| image:: https://scrutinizer-ci.com/g/QualiApps/obdlib/badges/coverage.png?b=master
     :target: https://scrutinizer-ci.com/g/QualiApps/obdlib/
