@@ -7,4 +7,4 @@ install:
   - "pip install scrutinizer-ocular"
   - "pip install ."
 script: "python setup.py nosetests"
-after_script: "ocular"
+after_script: ocular --data-file ".coverage" --config-file ".coveragerc"
