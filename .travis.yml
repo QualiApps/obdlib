@@ -3,5 +3,8 @@ python:
   - "2.7"
   - "3.4"
   - "pypy"
-install: "pip install ."
+install:
+  - "pip install scrutinizer-ocular"
+  - "pip install ."
 script: "python setup.py nosetests"
+after_script: "ocular"
