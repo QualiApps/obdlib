@@ -87,37 +87,9 @@ class OBDScanner(object):
             :return:
         """
         self.reset()
-        if not self._check_response(self.echo_off()):
-            mess = "Echo command did not completed"
-            logger.error(mess)
-            raise Exception(mess)
-
-        if not self._check_response(
-                self.send(
-                        elm327.SPACES_OFF_COMMAND).raw_value):
-            logger.warning("Spaces off command did not completed")
-
-        if not self._check_response(
-                self.send(
-                        elm327.LINEFEED_OFF_COMMAND).raw_value):
-            logger.warning("Line feed off command did not completed")
-
         # Disable memory function
         self.send(elm327.MEMORY_OFF_COMMAND)
-
-        if not self._check_response(
-                self.send(
-                        elm327.SET_PROTOCOL_AUTO_COMMAND).raw_value):
-            mess = "Set protocol command did not completed"
-            logger.error(mess)
-            raise Exception(mess)
-
-        if not self._check_response(
-                self.send(
-                        elm327.HEADER_ON_COMMAND).raw_value):
-            mess = "Enable header command did not completed"
-            logger.error(mess)
-            raise Exception(mess)
+        self.init_obd()
 
         self.sensor = sensors.Command(self.send, self.units)
         # checks connection with vehicle
@@ -133,6 +105,36 @@ class OBDScanner(object):
 
         # gets available pids
         self.sensor.check_pids()
+
+    def init_obd(self):
+        if not self._check_response(self.echo_off()):
+            mess = "Echo command did not completed"
+            logger.error(mess)
+            raise Exception(mess)
+
+        if not self._check_response(
+                self.send(
+                        elm327.SPACES_OFF_COMMAND).raw_value):
+            logger.warning("Spaces off command did not completed")
+
+        if not self._check_response(
+                self.send(
+                        elm327.LINEFEED_OFF_COMMAND).raw_value):
+            logger.warning("Line feed off command did not completed")
+
+        if not self._check_response(
+                self.send(
+                        elm327.SET_PROTOCOL_AUTO_COMMAND).raw_value):
+            mess = "Set protocol command did not completed"
+            logger.error(mess)
+            raise Exception(mess)
+
+        if not self._check_response(
+                self.send(
+                        elm327.HEADER_ON_COMMAND).raw_value):
+            mess = "Enable header command did not completed"
+            logger.error(mess)
+            raise Exception(mess)
 
     def get_proto_num(self):
         """
@@ -163,7 +165,7 @@ class OBDScanner(object):
                     continue
 
                 if len(data) == 0:
-                    if self.retry(retry_number):
+                    if retry_number >= elm327.DEFAULT_RETRIES:
                         break
                     retry_number += 1
                     continue
@@ -178,10 +180,6 @@ class OBDScanner(object):
             raise Exception(mess)
 
         return Response()
-
-    @staticmethod
-    def retry(number):
-        return number >= elm327.DEFAULT_RETRIES
 
     def reset(self):
         """
