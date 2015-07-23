@@ -70,8 +70,8 @@ See LICENSE_ for details.
 .. _LICENSE:
     LICENSE.txt
 
-.. |build| image:: https://travis-ci.org/s-s-boika/obdlib.svg
-    :target: https://travis-ci.org/s-s-boika/obdlib
+.. |build| image:: https://travis-ci.org/QualiApps/obdlib.svg
+    :target: https://travis-ci.org/QualiApps/obdlib
 
 .. |version| image:: https://badge.fury.io/py/obdlib.svg
     :target: https://pypi.python.org/pypi/obdlib/
