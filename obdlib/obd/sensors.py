@@ -99,6 +99,12 @@ class Command(object):
 
         return value
 
+    def _process(self):
+        return dict(
+            [k, self._set_value(v)]
+            for k, v in self.__call(self.pid).value.items()
+        )
+
     def __getitem__(self, mode):
         self.__ecus = {}
 
@@ -125,9 +131,7 @@ class Command(object):
                             pid))
 
                 self.init(pid_info)
-                self.__ecus.update(
-                    dict([k, self._set_value(v)] for k, v in self.__call(self.pid).value.items())
-                )
+                self.__ecus.update(self._process())
             except Exception as err:
                 # logging
                 logger.error(err)
