@@ -87,26 +87,6 @@ class OBDScanner(object):
             :return:
         """
         self.reset()
-        # Disable memory function
-        self.send(elm327.MEMORY_OFF_COMMAND)
-        self.init_obd()
-
-        self.sensor = sensors.Command(self.send, self.units)
-        # checks connection with vehicle
-        self.__connected = self.sensor.check_pids()
-
-        if not self.__connected:
-            mess = "Failed connection to the OBD2 interface!"
-            logger.error(mess)
-            raise Exception(mess)
-
-        self.obd_protocol = self.send(
-            elm327.DESCRIBE_PROTOCOL_NUMBER_COMMAND).at_value
-
-        # gets available pids
-        self.sensor.check_pids()
-
-    def init_obd(self):
         if not self._check_response(self.echo_off()):
             mess = "Echo command did not completed"
             logger.error(mess)
@@ -122,6 +102,9 @@ class OBDScanner(object):
                         elm327.LINEFEED_OFF_COMMAND).raw_value):
             logger.warning("Line feed off command did not completed")
 
+        # Disable memory function
+        self.send(elm327.MEMORY_OFF_COMMAND)
+
         if not self._check_response(
                 self.send(
                         elm327.SET_PROTOCOL_AUTO_COMMAND).raw_value):
@@ -135,6 +118,21 @@ class OBDScanner(object):
             mess = "Enable header command did not completed"
             logger.error(mess)
             raise Exception(mess)
+
+        self.sensor = sensors.Command(self.send, self.units)
+        # checks connection with vehicle
+        self.__connected = self.sensor.check_pids()
+
+        if not self.__connected:
+            mess = "Failed connection to the OBD2 interface!"
+            logger.error(mess)
+            raise Exception(mess)
+
+        self.obd_protocol = self.send(
+            elm327.DESCRIBE_PROTOCOL_NUMBER_COMMAND).at_value
+
+        # gets available pids
+        self.sensor.check_pids()
 
     def get_proto_num(self):
         """
