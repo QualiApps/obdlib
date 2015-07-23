@@ -114,30 +114,34 @@ class Command(object):
         """
         return pid != '00' and not self.is_pids(pid)
 
+    @staticmethod
+    def _raise(pid, mode=None):
+        if mode:
+            raise Exception(
+                "Unsupported command. {} PID {}".format(
+                    mode,
+                    pid))
+        else:
+            raise Exception("PID {} must be a string.".format(pid))
+
     def __getitem__(self, mode):
         self.__ecus = {}
 
         def get_pid(pid='00'):
             try:
                 if not isinstance(pid, str):
-                    raise Exception("PID {} must be a string.".format(pid))
+                    self._raise(pid)
 
                 # checks unsupported PIDs
                 if self._is_supported(pid):
-                    raise Exception(
-                        "Unsupported command. {} PID {}".format(
-                            mode,
-                            pid))
+                    self._raise(pid, mode)
 
                 pid = int(pid, 16)
                 pid_info = self.__modes.modes[mode][pid]
 
                 if not pid_info:
                     # if command does not describe in the modes class
-                    raise Exception(
-                        "Unsupported command. {} PID {}".format(
-                            mode,
-                            pid))
+                    self._raise(pid, mode)
 
                 self.init(pid_info)
                 self.__ecus.update(self._process())
