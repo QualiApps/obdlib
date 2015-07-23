@@ -39,22 +39,26 @@ class ProtocolsCan(Base):
             if self.check_message(ecu_messages):
                 # if the header enabled
                 if self.header:
-                    # multi line (ELM spec page 42) or single frame response
-                    self.data_start_byte = 4
-                    # sorts ECU's messages
-                    ecu_messages = sorted(ecu_messages)
+                    data = self.process_data(ecu_messages)
+        return data
 
-                    ecu_messages = self.check_frame(ecu_messages)
-                    for message in ecu_messages:
-                        ecu_number, f_type, response_mode = self.__get_frame_params(message)
+    def process_data(self, ecu_messages):
+        data = {}
+        # multi line (ELM spec page 42) or single frame response
+        self.data_start_byte = 4
+        # sorts ECU's messages
+        ecu_messages = sorted(ecu_messages)
 
-                        # check if response trouble codes
-                        if response_mode == 43:
-                            # add fake byte after the mode one
-                            # nothing to do
-                            self.data_start_byte = 2
+        ecu_messages = self.check_frame(ecu_messages)
+        for message in ecu_messages:
+            ecu_number, f_type, response_mode = self.__get_frame_params(message)
+            # check if response trouble codes
+            if response_mode == 43:
+                # add fake byte after the mode one
+                # nothing to do
+                self.data_start_byte = 2
 
-                        self.__process(data, message, ecu_number, f_type)
+            self.__process(data, message, ecu_number, f_type)
         return data
 
     def check_frame(self, frame):
