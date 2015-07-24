@@ -184,16 +184,11 @@ class OBDScanner(object):
         while True:
             data = self.uart_port.read(1)
 
+            if self.check_retry(data, retry_number) or self.if_end(data):
+                break
             if len(data) == 0:
-                if self.check_retry(retry_number):
-                    break
                 retry_number += 1
                 continue
-
-            if self.if_end(data):
-                break
-
-            # ignore incoming bytes that are of value 00 (NULL)
             if self.omit_null(data):
                 continue
 
@@ -201,8 +196,8 @@ class OBDScanner(object):
         return value
 
     @staticmethod
-    def check_retry(number):
-        return number >= elm327.DEFAULT_RETRIES
+    def check_retry(data, number):
+        return len(data) == 0 and number >= elm327.DEFAULT_RETRIES
 
     @staticmethod
     def if_end(symbol):
@@ -210,6 +205,7 @@ class OBDScanner(object):
 
     @staticmethod
     def omit_null(symbol):
+        """ignore incoming bytes that are of value 00 (NULL)"""
         return symbol == b'\x00'
 
     def reset(self):
