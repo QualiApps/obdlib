@@ -193,19 +193,15 @@ class OBDScanner(object):
             value += data
         return value
 
-    @staticmethod
-    def check_response(data, number):
+    def check_response(self, data, number):
         action = None
-        if data == b'>':
+        if self.if_end(data) or (len(data) == 0 and number >= elm327.DEFAULT_RETRIES):
             action = True
-        elif data == b'\x00':
+        elif self.omit_null(data):
             action = False
         elif len(data) == 0:
-            if number >= elm327.DEFAULT_RETRIES:
-                action = True
-            else:
-                number += 1
-                action = False
+            number += 1
+            action = False
         return (action, number)
 
     @staticmethod
