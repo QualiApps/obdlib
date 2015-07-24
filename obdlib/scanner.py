@@ -23,7 +23,8 @@ class OBDScanner(object):
             Init params
             :param pb_str: port or bus number|name
             :param baud: it is the clock rate
-            :param units: default units for system readings (0 - Europe, 1 - English)
+            :param units: default units for system readings
+            (0 - Europe, 1 - English)
         """
         self.pb_str = pb_str
         self.baud = baud
@@ -49,7 +50,9 @@ class OBDScanner(object):
             self.initialize()
 
     def is_port(self):
-        """ Returns a boolean for whether a successful connection with port was made """
+        """ Returns a boolean for whether a successful connection
+            with port was made
+        """
         return self.uart_port is not None
 
     def __enter__(self):
@@ -93,28 +96,24 @@ class OBDScanner(object):
             raise Exception(mess)
 
         if not self._check_response(
-                self.send(
-                        elm327.SPACES_OFF_COMMAND).raw_value):
+                self.send(elm327.SPACES_OFF_COMMAND).raw_value):
             logger.warning("Spaces off command did not completed")
 
         if not self._check_response(
-                self.send(
-                        elm327.LINEFEED_OFF_COMMAND).raw_value):
+                self.send(elm327.LINEFEED_OFF_COMMAND).raw_value):
             logger.warning("Line feed off command did not completed")
 
         # Disable memory function
         self.send(elm327.MEMORY_OFF_COMMAND)
 
         if not self._check_response(
-                self.send(
-                        elm327.SET_PROTOCOL_AUTO_COMMAND).raw_value):
+                self.send(elm327.SET_PROTOCOL_AUTO_COMMAND).raw_value):
             mess = "Set protocol command did not completed"
             logger.error(mess)
             raise Exception(mess)
 
         if not self._check_response(
-                self.send(
-                        elm327.HEADER_ON_COMMAND).raw_value):
+                self.send(elm327.HEADER_ON_COMMAND).raw_value):
             mess = "Enable header command did not completed"
             logger.error(mess)
             raise Exception(mess)
@@ -170,11 +169,11 @@ class OBDScanner(object):
         while True:
             data = self.uart_port.read(1)
 
-            if data == b'>':
+            if self.if_end(data):
                 break
 
             # ignore incoming bytes that are of value 00 (NULL)
-            if data == b'\x00':
+            if self.omit_null(data):
                 continue
 
             if len(data) == 0:
@@ -186,7 +185,13 @@ class OBDScanner(object):
             value += data
         return value
 
+    @staticmethod
+    def if_end(symbol):
+        return symbol == b'>'
 
+    @staticmethod
+    def omit_null(symbol):
+        return symbol == b'\x00'
 
     def reset(self):
         """
@@ -261,8 +266,7 @@ class OBDScanner(object):
             :return:
         """
         if not self._check_response(
-                self.send(
-                        commands.CLEAR_TROUBLE_CODES_COMMAND).raw_value):
+                self.send(commands.CLEAR_TROUBLE_CODES_COMMAND).raw_value):
             # logging warning
             logger.warning("Clear trouble codes did not return success")
 
