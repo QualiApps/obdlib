@@ -184,20 +184,19 @@ class OBDScanner(object):
         while True:
             data = self.uart_port.read(1)
 
-            if self.check_retry(data, retry_number) or self.if_end(data):
+            if self.check_retry(data, retry_number):
                 break
-            if len(data) == 0:
+            elif len(data) == 0:
                 retry_number += 1
                 continue
-            if self.omit_null(data):
+            elif self.omit_null(data):
                 continue
 
             value += data
         return value
 
-    @staticmethod
-    def check_retry(data, number):
-        return len(data) == 0 and number >= elm327.DEFAULT_RETRIES
+    def check_retry(self, data, number):
+        return (len(data) == 0 and number >= elm327.DEFAULT_RETRIES) or self.if_end(data)
 
     @staticmethod
     def if_end(symbol):
