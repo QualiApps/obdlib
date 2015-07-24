@@ -53,10 +53,13 @@ class Command(object):
         """
         for ecu, pids in self.__pids.items():
             for pid, access in pids.items():
-                if not access or int(pid, 16) in (0, 32, 64,):
+                if self.is_not_access(access, pid):
                     continue
                 self[mode](pid)
                 yield self
+
+    def is_not_access(self, access, pid):
+        return not access or int(pid, 16) in (0, 32, 64,)
 
     def check_pids(self):
         """
@@ -73,13 +76,9 @@ class Command(object):
     def add_pids(self):
         for ecu in self.__pids.keys():
             if self.__pids[ecu].get('20'):  # add 21-40 pids if available
-                self.__pids[ecu].update(
-                    self[1]('20').__ecus[ecu]
-                )
+                self.__pids[ecu].update(self[1]('20').__ecus[ecu])
             if self.__pids[ecu].get('40'):  # add 41-60 pids if available
-                self.__pids[ecu].update(
-                    self[1]('40').__ecus[ecu]
-                )
+                self.__pids[ecu].update(self[1]('40').__ecus[ecu])
 
     def is_ecus(self, pids):
         return pids and isinstance(pids.__ecus, dict) and len(pids.__ecus)
