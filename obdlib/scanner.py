@@ -97,32 +97,40 @@ class OBDScanner(object):
         # Disable memory function
         self.send(elm327.MEMORY_OFF_COMMAND)
 
-        if not self._check_response(
-                self.send(elm327.SET_PROTOCOL_AUTO_COMMAND).raw_value):
-            mess = "Set protocol command did not completed"
-            logger.error(mess)
-            raise Exception(mess)
-
-        if not self._check_response(
-                self.send(elm327.HEADER_ON_COMMAND).raw_value):
-            mess = "Enable header command did not completed"
-            logger.error(mess)
-            raise Exception(mess)
+        self.set_protocol()
+        self.header_on()
 
         self.sensor = sensors.Command(self.send, self.units)
         # checks connection with vehicle
         self.__connected = self.sensor.check_pids()
 
-        if not self.__connected:
-            mess = "Failed connection to the OBD2 interface!"
-            logger.error(mess)
-            raise Exception(mess)
+        self.check_connection()
 
         self.obd_protocol = self.send(
             elm327.DESCRIBE_PROTOCOL_NUMBER_COMMAND).at_value
 
         # gets available pids
         self.sensor.check_pids()
+
+    def check_connection(self):
+        if not self.__connected:
+            mess = "Failed connection to the OBD2 interface!"
+            logger.error(mess)
+            raise Exception(mess)
+
+    def header_on(self):
+        if not self._check_response(
+                self.send(elm327.HEADER_ON_COMMAND).raw_value):
+            mess = "Enable header command did not completed"
+            logger.error(mess)
+            raise Exception(mess)
+
+    def set_protocol(self):
+        if not self._check_response(
+                self.send(elm327.SET_PROTOCOL_AUTO_COMMAND).raw_value):
+            mess = "Set protocol command did not completed"
+            logger.error(mess)
+            raise Exception(mess)
 
     def check_echo_off(self):
         if not self._check_response(self.echo_off()):
