@@ -184,37 +184,21 @@ class OBDScanner(object):
         while True:
             data = self.uart_port.read(1)
 
-            action, retry_number = self.check_uart(data, retry_number)
-            if action is True:
+            if data == b'>':
                 break
-            if action is False:
+
+            # ignore incoming bytes that are of value 00 (NULL)
+            if data == b'\x00':
+                continue
+
+            if len(data) == 0:
+                if retry_number >= elm327.DEFAULT_RETRIES:
+                    break
+                retry_number += 1
                 continue
 
             value += data
         return value
-
-    def check_uart(self, data, number):
-        """
-            Cehcks OBDII response
-            :param data - response symbol
-            :param number - max retries number
-            :return tuple of action - can be True (break), False (continue)
-        """
-        action = None
-        if self.check_break(data, number):
-            action = True
-        # ignore incoming bytes that are of value 00 (NULL)"
-        elif data == b'\x00':
-            action = False
-        elif len(data) == 0:
-            number += 1
-            action = False
-        return (action, number)
-
-    @staticmethod
-    def check_break(data, number):
-        return data == b'>' or (len(data) == 0
-                                and number >= elm327.DEFAULT_RETRIES)
 
     def reset(self):
         """
