@@ -68,10 +68,6 @@ class Logging(object):
         out_msg = self.msg_format(msg, level)
 
         self.save_msg(self.output_stream, out_msg)
-        if self.output_stream:
-            # saves logging message
-            with open(self.output_stream, 'wb') as stream:
-                stream.write(out_msg)
 
         if self.use_stdout or force:
             stdout.write(out_msg)
