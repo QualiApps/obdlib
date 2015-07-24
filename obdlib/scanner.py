@@ -90,18 +90,9 @@ class OBDScanner(object):
             :return:
         """
         self.reset()
-        if not self._check_response(self.echo_off()):
-            mess = "Echo command did not completed"
-            logger.error(mess)
-            raise Exception(mess)
-
-        if not self._check_response(
-                self.send(elm327.SPACES_OFF_COMMAND).raw_value):
-            logger.warning("Spaces off command did not completed")
-
-        if not self._check_response(
-                self.send(elm327.LINEFEED_OFF_COMMAND).raw_value):
-            logger.warning("Line feed off command did not completed")
+        self.check_echo_off()
+        self.check_spaces_off()
+        self.check_feed_off()
 
         # Disable memory function
         self.send(elm327.MEMORY_OFF_COMMAND)
@@ -132,6 +123,22 @@ class OBDScanner(object):
 
         # gets available pids
         self.sensor.check_pids()
+
+    def check_echo_off(self):
+        if not self._check_response(self.echo_off()):
+            mess = "Echo command did not completed"
+            logger.error(mess)
+            raise Exception(mess)
+
+    def check_spaces_off(self):
+        if not self._check_response(
+                self.send(elm327.SPACES_OFF_COMMAND).raw_value):
+            logger.warning("Spaces off command did not completed")
+
+    def check_feed_off(self):
+        if not self._check_response(
+                self.send(elm327.LINEFEED_OFF_COMMAND).raw_value):
+            logger.warning("Line feed off command did not completed")
 
     def get_proto_num(self):
         """
@@ -169,17 +176,17 @@ class OBDScanner(object):
         while True:
             data = self.uart_port.read(1)
 
+            if len(data) == 0:
+                if retry_number >= elm327.DEFAULT_RETRIES:
+                    break
+                retry_number += 1
+                continue
+
             if self.if_end(data):
                 break
 
             # ignore incoming bytes that are of value 00 (NULL)
             if self.omit_null(data):
-                continue
-
-            if len(data) == 0:
-                if retry_number >= elm327.DEFAULT_RETRIES:
-                    break
-                retry_number += 1
                 continue
 
             value += data
