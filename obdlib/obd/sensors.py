@@ -119,6 +119,30 @@ class Command(object):
             for k, v in self.__call(self.pid).value.items()
         )
 
+    def _process_pid(self, mode, pid):
+        if not isinstance(pid, str):
+            raise Exception("PID {} must be a string.".format(pid))
+
+        # checks unsupported PIDs
+        if self._is_supported(pid):
+            raise Exception(
+                "Unsupported command. {} PID {}".format(
+                    mode,
+                    pid))
+
+        pid = int(pid, 16)
+        pid_info = self.__modes.modes[mode][pid]
+
+        if not pid_info:
+            # if command does not describe in the modes class
+            raise Exception(
+                "Unsupported command. {} PID {}".format(
+                    mode,
+                    pid))
+
+        self.init(pid_info)
+        self.__ecus.update(self._process())
+
     def _is_supported(self, pid):
         """
             Checks an available PID
@@ -130,28 +154,7 @@ class Command(object):
 
         def get_pid(pid='00'):
             try:
-                if not isinstance(pid, str):
-                    raise Exception("PID {} must be a string.".format(pid))
-
-                # checks unsupported PIDs
-                if self._is_supported(pid):
-                    raise Exception(
-                        "Unsupported command. {} PID {}".format(
-                            mode,
-                            pid))
-
-                pid = int(pid, 16)
-                pid_info = self.__modes.modes[mode][pid]
-
-                if not pid_info:
-                    # if command does not describe in the modes class
-                    raise Exception(
-                        "Unsupported command. {} PID {}".format(
-                            mode,
-                            pid))
-
-                self.init(pid_info)
-                self.__ecus.update(self._process())
+                self._process_pid(mode, pid)
             except Exception as err:
                 # logging
                 logger.error(err)
